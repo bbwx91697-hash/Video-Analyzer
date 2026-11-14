@@ -20,7 +20,9 @@ Run the local GPU/FFmpeg video analysis pipeline via `analyze.ps1` in the reposi
 
 ## Quick Commands (PowerShell)
 
-Always invoke `analyze.ps1` (from `<REPO_ROOT>`) so project-local caches, UTF-8 encoding, and FFmpeg paths are configured automatically.
+Always invoke `analyze.ps1` inside the cloned repository root (`<REPO_ROOT>`) so project-local caches, UTF-8 encoding, and FFmpeg paths are configured automatically:
+- Locate `<REPO_ROOT>` by checking `$env:VIDEO_ANALYZER_HOME`, the current workspace root (if `analyze.ps1` exists there), or ask the user where `Video-Analyzer` was cloned.
+- If the repository is not cloned or `.venv` is missing, instruct the user to clone `https://github.com/bbwx91697-hash/Video-Analyzer.git` and run `.\setup.ps1` first.
 
 ### 1. Single Video (URL or Local File)
 

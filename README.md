@@ -42,24 +42,34 @@
     └── test_dynamic_frames.py   # 动态选帧单元测试（2 项）
 ```
 
-## 环境要求与安装
+## 安装方法
+
+> **重要提示**：本仓库不是纯文本 Prompt Skill，而是 **“Agent Skill 说明书 + 本地视听分析流水线”**。  
+> 先在本机初始化分析引擎，再把 Skill 安装到你常用的 AI 工具中，才能直接驱动本地 GPU/FFmpeg 运行。
+
+### 第一步：安装本地分析引擎（必需）
 
 - **系统与基础软件**：Windows 10/11、Python 3.10+、`ffmpeg` 与 `ffprobe`（已加入 `PATH`，或置于 `D:\ffmpeg\bin`）。
-- **GPU（可选但推荐）**：NVIDIA 显卡及 CUDA 驱动（默认优先 CUDA 跑 `faster-whisper`，不可用时可在命令行传 `-Device cpu`）。
-
-### 1. 基础环境搭建
+- **GPU（可选但推荐）**：NVIDIA 显卡及 CUDA 驱动（默认优先 CUDA 跑 `faster-whisper`，不可用时可传 `-Device cpu`）。
 
 ```powershell
-# 创建项目局部 .venv、安装 core 依赖并下载默认 large-v3 模型
+# 1. 克隆仓库到本地任意目录
+git clone https://github.com/bbwx91697-hash/Video-Analyzer.git
+cd Video-Analyzer
+
+# 2. 一键创建 .venv、安装核心依赖并拉取默认 large-v3 语音模型
 .\setup.ps1
 
-# 若国内下载 Hugging Face 较慢，可启用镜像：
+# 如国内访问 Hugging Face 较慢，可启用镜像：
 .\setup.ps1 -HfMirror
 ```
 
 如单连接下载 `faster-whisper-large-v3` 较慢，可使用 [tools/fetch_model_parallel.ps1](tools/fetch_model_parallel.ps1) 进行 16 路并发断点拉取并校验 SHA-256。
 
-### 2. 可选外链下载支持（B站 / YouTube）
+> **跨目录使用建议**：把克隆目录设为环境变量 `VIDEO_ANALYZER_HOME`（例如 `[Environment]::SetEnvironmentVariable('VIDEO_ANALYZER_HOME', (Get-Location).Path, 'User')`），这样在其他项目文件夹中唤醒 Skill 时，Agent 也能自动找到 `analyze.ps1`。
+
+<details>
+<summary>可选依赖：开启 B站 / YouTube 下载（yt-dlp）</summary>
 
 本仓库默认不将在线视频下载器写入强制依赖，如需解析 B站 / YouTube 链接，请在虚拟环境内可选安装 `yt-dlp`：
 
@@ -67,9 +77,104 @@
 .\.venv\Scripts\python.exe -m pip install yt-dlp
 ```
 
-### 3. 可选抖音抓取配置
+</details>
 
-`douyin_fetch.py` 默认调用本机独立的 `douyin-browser-mcp` 虚拟环境执行浏览器页面抓包，可通过环境变量 `DOUYIN_FETCH_PYTHON` 或参数 `-FetchPython` 指定兼容抓包器 Python 路径；若仅分析本地视频或 B站/YouTube 链接，则无需配置该项。
+<details>
+<summary>可选配置：抖音链接抓取器</summary>
+
+`douyin_fetch.py` 默认适配独立浏览器抓取环境，可通过环境变量 `DOUYIN_FETCH_PYTHON` 或参数 `-FetchPython` 指定兼容抓包器 Python 路径；若仅分析本地视频或 B站 / YouTube 链接，则无需配置该项。
+
+</details>
+
+### 第二步：安装 Agent Skill（支持主流 AI 工具）
+
+仓库已按开放 **Agent Skills 规范**组织在 [skills/video-analyzer/SKILL.md](skills/video-analyzer/SKILL.md)，可直接使用 CLI 一键安装或手动复制到对应目录：
+
+<details open>
+<summary><b>Vercel Skills CLI（<code>npx skills</code>，推荐）</b></summary>
+
+```powershell
+# 安装到当前项目或交互式选择 Agent（已验证自动识别 video-analyzer）
+npx skills add bbwx91697-hash/Video-Analyzer
+
+# 全局安装并显式指定 skill 名称
+npx skills add bbwx91697-hash/Video-Analyzer --skill video-analyzer -g
+```
+
+> 若 Windows PowerShell 报执行策略限制导致 `npx.ps1` 无法运行，可改用 `npx.cmd skills add bbwx91697-hash/Video-Analyzer`。
+
+</details>
+
+<details>
+<summary><b>GitHub CLI（<code>gh skill</code>）</b></summary>
+
+```bash
+# 安装到当前仓库项目（.agents/skills/video-analyzer）
+gh skill install bbwx91697-hash/Video-Analyzer video-analyzer
+
+# 安装到用户全局
+gh skill install bbwx91697-hash/Video-Analyzer video-analyzer --scope user
+```
+
+</details>
+
+<details>
+<summary><b>Antigravity（谷歌反重力）</b></summary>
+
+方式 1（CLI 一键安装到全局）：
+
+```powershell
+npx skills add bbwx91697-hash/Video-Analyzer --skill video-analyzer -a antigravity -g
+```
+
+方式 2（手动安装）：将本仓库 `skills\video-analyzer\` 复制到：
+- **全局生效**：`%USERPROFILE%\.gemini\config\skills\video-analyzer\SKILL.md`
+- **当前项目生效**：`<你的项目>\.agents\skills\video-analyzer\SKILL.md`
+
+</details>
+
+<details>
+<summary><b>GitHub Copilot CLI / VS Code</b></summary>
+
+```bash
+gh skill install bbwx91697-hash/Video-Analyzer video-analyzer
+```
+
+或将 `skills\video-analyzer\SKILL.md` 复制到当前项目 `.agents\skills\video-analyzer\SKILL.md`（或 `.github\skills\video-analyzer\SKILL.md`）。
+
+</details>
+
+<details>
+<summary><b>Claude Code</b></summary>
+
+```powershell
+npx skills add bbwx91697-hash/Video-Analyzer --skill video-analyzer -a claude-code -g
+```
+
+或手动复制 `skills\video-analyzer\SKILL.md` 到全局 `%USERPROFILE%\.claude\skills\video-analyzer\SKILL.md`（或项目级 `.claude\skills\video-analyzer\SKILL.md`）。
+
+</details>
+
+<details>
+<summary><b>OpenAI Codex / Gemini CLI / AionUi 等通用兼容工具</b></summary>
+
+可将克隆仓库中的 `skills\video-analyzer\SKILL.md` 直接复制到对应工具的全局技能目录（PowerShell）：
+
+```powershell
+# 示例：同时安装到通用 .agents 与常见客户端目录（按需保留需要的路径）
+$targets = @(
+  "$env:USERPROFILE\.agents\skills\video-analyzer",
+  "$env:USERPROFILE\.gemini\skills\video-analyzer",
+  "$env:USERPROFILE\.codex\skills\video-analyzer",
+  "$env:APPDATA\AionUi\config\skills\video-analyzer"
+)
+foreach ($dir in $targets) {
+  New-Item -ItemType Directory -Force -Path $dir | Out-Null
+  Copy-Item -Force ".\skills\video-analyzer\SKILL.md" (Join-Path $dir "SKILL.md")
+}
+```
+
+</details>
 
 ## 快速使用
 
@@ -143,7 +248,11 @@ videos\sample.mp4 | label=sample | save_proxy=true
 
 ## 作为 Agent Skill 使用
 
-仓库内附带了符合通用 Agent Skills 规范的 [skills/video-analyzer/SKILL.md](skills/video-analyzer/SKILL.md)，可复制到各支持该规范的 Agent 全局或项目级 `skills/video-analyzer/` 目录中使用。核心策略是让 Agent 默认只读取 `analysis.md` + `storyboard.jpg`（按需补看 `transitions.jpg`），避免全片切图浪费上下文额度。
+安装好 Skill（见上文 [第二步：安装 Agent Skill](#第二步安装-agent-skill支持主流-ai-工具)）后，对任意兼容 Agent 直接发出类似指令即可触发：
+- “帮我分析这个视频并总结结构：`<视频链接或本地路径>`”
+- “把这个文件夹里的几个视频按任务清单串行跑一遍”
+
+Agent 会自动遵守分层速读策略：默认只读取 `analysis.md` + `storyboard.jpg`（必要时补看 `transitions.jpg` 或单张 `timeline_00X.jpg`），仅在你明确要求逐帧细查某几秒时才导出局部 `-Clips`，避免浪费上下文额度。
 
 ## 运行测试
 
