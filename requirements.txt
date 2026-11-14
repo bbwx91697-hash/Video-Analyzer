@@ -1,0 +1,8 @@
+faster-whisper>=1.1
+opencv-python-headless
+numpy
+pillow
+nvidia-cublas-cu12
+nvidia-cudnn-cu12==9.*
+zhconv
+rapidocr_onnxruntime

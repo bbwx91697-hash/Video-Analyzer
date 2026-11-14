@@ -1,0 +1,30 @@
+# Python / environments
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Local models, caches, logs, temp, outputs
+models/
+cache/
+logs/
+tmp/
+results/
+
+# Media files
+*.mp4
+*.mkv
+*.mov
+*.avi
+*.flv
+*.webm
+*.mp3
+*.wav
+*.m4a
+
+# OS / IDE / secrets
+.env
+.env.*
+.DS_Store
+Thumbs.db
